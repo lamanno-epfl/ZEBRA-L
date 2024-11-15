@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Zebrafish Lipid Viewer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.24.2/plotly.min.js"></script>
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        #plot {
+            width: 100%;
+            height: 600px;
+        }
+        .input-group {
+            margin: 20px 0;
+        }
+    </style>
+        <div class="container">
+            <button class="nav-button" onclick="navigate('download')">Download</button>
+            <button class="nav-button" onclick="navigate('tutorials')">Tutorials</button>
+        </div>
+    
+        <script>
+            function navigate(page) {
+                // In a real application, you would replace these with actual URLs
+                const pages = {
+                    'download': 'download.html',
+                    'tutorials': 'tutorials.html'
+                };
+                
+                window.location.href = pages[page];
+            }
+        </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Zebrafish Lipid Viewer</h1>
+        <div class="input-group">
+            <input type="file" id="fileInput" accept=".npy">
+            <p>Select a .npy file containing a 3D array</p>
+        </div>
+        <div id="plot"></div>
+    </div>
+
+    <script>
+        async function loadBinaryMask(url) {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const buffer = await response.arrayBuffer();
+            const data = new Uint8Array(buffer);
+            
+            // Check numpy magic string
+            const magic = String.fromCharCode.apply(null, data.slice(0, 6));
+            if (!magic.startsWith('\x93NUMPY')) {
+                throw new Error('Not a valid NumPy file');
+            }
+            
+            // Parse header
+            const headerLength = new DataView(buffer, 8, 2).getUint16(0, true);
+            const header = new TextDecoder().decode(data.slice(10, 10 + headerLength));
+            
+            // Extract shape from header
+            const shapeMatch = header.match(/'shape': \((.*?)\)/);
+            if (!shapeMatch) throw new Error('Cannot find shape in header');
+            const shape = shapeMatch[1].split(',').map(x => parseInt(x.trim()));
+            
+            // Get data type
+            const dtypeMatch = header.match(/'descr': '(.*?)'/);
+            if (!dtypeMatch) throw new Error('Cannot find dtype in header');
+            const dtype = dtypeMatch[1];
+            
+            // Determine the typed array constructor based on dtype
+            let TypedArrayConstructor;
+            switch (dtype) {
+                case '|u1': // uint8
+                    TypedArrayConstructor = Uint8Array;
+                    break;
+                case '|i1': // int8
+                    TypedArrayConstructor = Int8Array;
+                    break;
+                default:
+                    throw new Error(`Unsupported dtype: ${dtype}`);
+            }
+            
+            // Read data using the determined array constructor
+            const dataOffset = 10 + headerLength;
+            const dataArray = new TypedArrayConstructor(buffer.slice(dataOffset));
+            return {
+                data: dataArray,
+                shape: shape
+            };
+        }
+
+        function createCoordinatesFrom3DArray(array, shape) {
+            const [depth, height, width] = shape;
+            const x = [];
+            const y = [];
+            const z = [];
+            const values = [];
+
+            for (let d = 0; d < depth; d++) {
+                for (let h = 0; h < height; h++) {
+                    for (let w = 0; w < width; w++) {
+                        const value = array[d * (height * width) + h * width + w];
+                        if (value === 1) {  // Only include points where value is 1
+                            x.push(w);
+                            y.push(h);
+                            z.push(d);
+                            values.push(value);
+                        }
+                    }
+                }
+            }
+
+            return { x, y, z, values };
+        }
+
+
+        async function loadNumpyArray(file) {
+            const buffer = await file.arrayBuffer();
+            const data = new Uint8Array(buffer);
+            
+            // Check numpy magic string
+            const magic = String.fromCharCode.apply(null, data.slice(0, 6));
+            if (!magic.startsWith('\x93NUMPY')) {
+                throw new Error('Not a valid NumPy file');
+            }
+            
+            // Parse header
+            const headerLength = new DataView(buffer, 8, 2).getUint16(0, true);
+            const header = new TextDecoder().decode(data.slice(10, 10 + headerLength));
+            
+            // Extract shape from header
+            const shapeMatch = header.match(/'shape': \((.*?)\)/);
+            if (!shapeMatch) throw new Error('Cannot find shape in header');
+            const shape = shapeMatch[1].split(',').map(x => parseInt(x.trim()));
+            
+            // Get data type
+            const dtypeMatch = header.match(/'descr': '(.*?)'/);
+            if (!dtypeMatch) throw new Error('Cannot find dtype in header');
+            const dtype = dtypeMatch[1];
+
+            // Determine the typed array constructor based on dtype
+            let TypedArrayConstructor;
+            switch (dtype) {
+                case '<f4': // float32
+                    TypedArrayConstructor = Float32Array;
+                    break;
+                case '<f8': // float64
+                    TypedArrayConstructor = Float64Array;
+                    break;
+                case '|u1': // uint8
+                    TypedArrayConstructor = Uint8Array;
+                    break;
+                case '|i1': // int8
+                    TypedArrayConstructor = Int8Array;
+                    break;
+                case '<u2': // uint16
+                    TypedArrayConstructor = Uint16Array;
+                    break;
+                case '<i2': // int16
+                    TypedArrayConstructor = Int16Array;
+                    break;
+                case '<u4': // uint32
+                    TypedArrayConstructor = Uint32Array;
+                    break;
+                case '<i4': // int32
+                    TypedArrayConstructor = Int32Array;
+                    break;
+                default:
+                    throw new Error(`Unsupported dtype: ${dtype}`);
+            }
+            
+            // Read data using the determined array constructor
+            const dataOffset = 10 + headerLength;
+            const dataArray = new TypedArrayConstructor(buffer, dataOffset);
+
+            return {
+                data: dataArray,
+                shape: shape
+            };
+        }
+
+        function visualize3DArray(array, shape) {
+            const [x, y, z] = shape;
+            let xCoords = [];
+            let yCoords = [];
+            let zCoords = [];
+            let values = [];
+            
+            // Create coordinates and values arrays
+            for (let i = 0; i < x; i++) {
+                for (let j = 0; j < y; j++) {
+                    for (let k = 0; k < z; k++) {
+                        
+                        if (array[i * y * z + j * z + k] > 0.3){
+                            xCoords.push(i);
+                            yCoords.push(j);
+                            zCoords.push(k);
+                            values.push(array[i * y * z + j * z + k]);
+                        }
+
+
+
+                        
+                    }
+                }
+            }
+
+            function getPercentileIndexes(arr) {
+                // Step 1: Sort the array while keeping track of original indices
+                const sortedWithIndices = arr
+                    .map((value, index) => ({ value, index }))
+                    .sort((a, b) => a.value - b.value);
+
+                // Step 2: Define boundaries for each percentile group
+                const n = arr.length;
+                const percentiles = [0.2, 0.4, 0.6, 0.8, 1.0];
+                const indexGroups = [];
+
+                let startIndex = 0;
+                for (let i = 0; i < percentiles.length; i++) {
+                    // Calculate the end index for the current percentile
+                    const endIndex = Math.floor(n * percentiles[i]);
+                    
+                    // Extract indices for the current percentile group
+                    const indexes = sortedWithIndices
+                        .slice(startIndex, endIndex)
+                        .map(item => item.index);
+
+                    indexGroups.push(indexes);
+                    startIndex = endIndex;
+                }
+
+                return indexGroups;
+            }
+
+            function subsetArrayByIndexGroups(arr, indexGroups) {
+                // Step 4: Use the index groups to subset the original array
+                return indexGroups.map(indexGroup => indexGroup.map(index => arr[index]));
+            }
+
+            const indexGroups = getPercentileIndexes(values);
+            const subsets_x = subsetArrayByIndexGroups(xCoords, indexGroups);
+            const subsets_y = subsetArrayByIndexGroups(yCoords, indexGroups);
+            const subsets_z = subsetArrayByIndexGroups(zCoords, indexGroups);
+            const subsets_values = subsetArrayByIndexGroups(values, indexGroups);
+
+
+            const data = [
+                // 0-20th percentile
+                {
+                    x: subsets_x[0],
+                    y: subsets_y[0],
+                    z: subsets_z[0],
+                    type: 'scatter3d',
+                    mode: 'markers',
+                    marker: {
+                        color: subsets_values[0],
+                        size: 3,
+                        colorscale:[
+            [0, 'white'],       // smallest value will be white
+            [0.33, 'gray'],      // lower-mid values will be blue
+            [0.67, 'lightblue'],  // higher-mid values will be dark blue
+            [1, 'purple']        // largest value will be purple
+        ],
+                        opacity: 0.05,
+                        cmin: 0.0, // Set this to your desired minimum value
+                        cmax: 1.0  // Set this to your desired maximum value
+
+                    },
+                }, 
+
+                // 20-40th percentile
+                {
+                    x: subsets_x[1],
+                    y: subsets_y[1],
+                    z: subsets_z[1],
+                    type: 'scatter3d',
+                    mode: 'markers',
+                    
+                    marker: {
+                        color: subsets_values[1],
+                        size: 3,
+                        colorscale:[
+            [0, 'white'],       // smallest value will be white
+            [0.33, 'gray'],      // lower-mid values will be blue
+            [0.67, 'lightblue'],  // higher-mid values will be dark blue
+            [1, 'purple']        // largest value will be purple
+        ],
+                        opacity: 0.1,
+                        cmin: 0.0, // Set this to your desired minimum value
+                        cmax: 1.0  // Set this to your desired maximum value
+                    },
+                },
+                // 40-60th percentile
+                {
+                    x: subsets_x[2],
+                    y: subsets_y[2],
+                    z: subsets_z[2],
+                    type: 'scatter3d',
+                    mode: 'markers',
+                    
+                    marker: {
+                        color: subsets_values[2],
+                        size: 3,
+                        colorscale:[
+            [0, 'white'],       // smallest value will be white
+            [0.33, 'gray'],      // lower-mid values will be blue
+            [0.67, 'lightblue'],  // higher-mid values will be dark blue
+            [1, 'purple']        // largest value will be purple
+        ],
+                        opacity: 0.1,
+                        cmin: 0.0, // Set this to your desired minimum value
+                        cmax: 1.0  // Set this to your desired maximum value
+                    },
+                },
+        //         // 60th-80th percentile
+        //         {
+        //             x: subsets_x[3],
+        //             y: subsets_y[3],
+        //             z: subsets_z[3],
+        //             type: 'scatter3d',
+        //             mode: 'markers',
+                    
+        //             marker: {
+        //                 color: subsets_values[3],
+        //                 size: 3,
+        //                 colorscale:[
+        //     [0, 'white'],       // smallest value will be white
+        //     [0.33, 'gray'],      // lower-mid values will be blue
+        //     [0.67, 'lightblue'],  // higher-mid values will be dark blue
+        //     [1, 'purple']        // largest value will be purple
+        // ],
+        //                 opacity: 0.2,
+        //                 cmin: 0.0, // Set this to your desired minimum value
+        //                 cmax: 1.0  // Set this to your desired maximum value
+        //             },
+        //         },
+                // 80th+ 
+                {
+                    x: subsets_x[4],
+                    y: subsets_y[4],
+                    z: subsets_z[4],
+                    type: 'scatter3d',
+                    mode: 'markers',
+                    
+                    marker: {
+                        color: subsets_values[4],
+                        size: 3,
+                        colorscale:[
+            [0, 'white'],       // smallest value will be white
+            [0.33, 'gray'],      // lower-mid values will be blue
+            [0.67, 'lightblue'],  // higher-mid values will be dark blue
+            [1, 'purple']        // largest value will be purple
+        ],
+                        opacity: 0.4,
+                        cmin: 0.0, // Set this to your desired minimum value
+                        cmax: 0.95 // Set this to your desired maximum value
+                    },
+                }
+
+                
+                ]
+            
+            const layout = {
+                margin: { l: 0, r: 0, b: 0, t: 0 },
+                scene: {
+                    xaxis: { title: 'X' },
+                    yaxis: { title: 'Y' },
+                    zaxis: { title: 'Z' },
+                    aspectmode: "manual",
+                    aspectratio: {
+                        x: 0.3, y: 0.5, z: 1.5,
+                    },
+                }
+            };
+            
+            Plotly.newPlot('plot', data, layout);
+           
+            
+            
+        }
+
+        document.getElementById('fileInput').addEventListener('change', async (event) => {
+            try {
+                const file = event.target.files[0];
+                const { data, shape } = await loadNumpyArray(file);
+                visualize3DArray(data, shape);
+            } catch (error) {
+                alert('Error loading file: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

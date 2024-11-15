@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Download Page</title>
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        #plot {
+            width: 100%;
+            height: 600px;
+        }
+        .input-group {
+            margin: 20px 0;
+        }
+    </style>
+
+    <div class="container">
+        <button class="nav-button" onclick="navigate('visualise')">Visualise</button>
+        <button class="nav-button" onclick="navigate('tutorials')">Tutorials</button>
+    </div>
+
+    <script>
+        function navigate(page) {
+            // In a real application, you would replace these with actual URLs
+            const pages = {
+                'visualise': 'visualise.html',
+                'tutorials': 'tutorials.html'
+            };
+            
+            window.location.href = pages[page];
+        }
+    </script>
+
+</head>
+
+
+
+<body>
+
+    <div class="container">
+        <h1>Download Page</h1>
+        Please find below links to both the raw and processed data sets.
+
+        <h2>Raw data</h2>
+        MSI: 
+        <a href="https://metaspace2020.eu/api_auth/review?prj=fd035620-e6de-11ee-86c1-7fce1db28462&token=DtylbPVV_FyN" target="_blank">METASPACE</a>
+
+        <br>
+
+        
+        HybISS: 
+        <a href="https://zenodo.org/records/14170238?token=eyJhbGciOiJIUzUxMiJ9.eyJpZCI6ImM5YjMwNDU4LTVmNDYtNDBmYS1hZTIyLTM3ZjQ3Y2ZkYjA2MCIsImRhdGEiOnt9LCJyYW5kb20iOiJkNDY0ODMzZjU3NGNlNWEyNDNjZjVmMDUyOWQ2NTQ1MSJ9.Abq7HlcSCuwyNYD0Re0Vs30hrzuxVP0es0G1QiTHZDRkSAO2yHdBH_54AnCWnTnXZ9Lce4mpI4gPtInoHU2ayg" target="_blank">Zenodo</a>
+        <br>
+        LCMS:
+
+        <h2>Processed data</h2>
+        different links for the 72h, 48h, 24h, and 8h processed datasets
+
+
+    </div>
+
+</body>
+</html>

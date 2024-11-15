@@ -1,0 +1,122 @@
+function getPercentileIndexes(arr) {
+    // Step 1: Sort the array while keeping track of original indices
+    const sortedWithIndices = arr
+        .map((value, index) => ({ value, index }))
+        .sort((a, b) => a.value - b.value);
+
+    // Step 2: Define boundaries for each percentile group
+    const n = arr.length;
+    const percentiles = [0.2, 0.4, 0.6, 0.8, 1.0];
+    const indexGroups = [];
+
+    let startIndex = 0;
+    for (let i = 0; i < percentiles.length; i++) {
+        // Calculate the end index for the current percentile
+        const endIndex = Math.floor(n * percentiles[i]);
+        
+        // Extract indices for the current percentile group
+        const indexes = sortedWithIndices
+            .slice(startIndex, endIndex)
+            .map(item => item.index);
+
+        indexGroups.push(indexes);
+        startIndex = endIndex;
+    }
+
+    return indexGroups;
+}
+
+function subsetArrayByIndexGroups(arr, indexGroups) {
+    // Step 4: Use the index groups to subset the original array
+    return indexGroups.map(indexGroup => indexGroup.map(index => arr[index]));
+}
+
+const indexGroups = getPercentileIndexes(values);
+const subsets_x = subsetArrayByIndexGroups(xCoords, indexGroups);
+const subsets_y = subsetArrayByIndexGroups(yCoords, indexGroups);
+const subsets_z = subsetArrayByIndexGroups(zCoords, indexGroups);
+const subsets_values = subsetArrayByIndexGroups(values, indexGroups);
+
+var data = [
+// 0-20th percentile
+{
+    x: subsets_x[0],
+    y: subsets_y[0],
+    z: subsets_z[0],
+    type: 'scatter3d',
+    mode: 'markers',
+    marker: {
+        color: subsets_values[0],
+        size: 5,
+        colorscale: 'Viridis',
+        opacity: 0.1,
+
+    },
+}, 
+
+// 20-40th percentile
+{
+    x: subsets_x[1],
+    y: subsets_y[1],
+    z: subsets_z[1],
+    type: 'scatter3d',
+    mode: 'markers',
+    
+    marker: {
+        color: subsets_values[1],
+        size: 5,
+        colorscale: 'Viridis',
+        opacity: 0.2,
+    },
+  },
+// 40-60th percentile
+{
+    x: subsets_x[2],
+    y: subsets_y[2],
+    z: subsets_z[2],
+    type: 'scatter3d',
+    mode: 'markers',
+    
+    marker: {
+        color: color: subsets_values[2],
+        size: 5,
+        colorscale: 'Viridis',
+        opacity: 0.4,
+    },
+  },
+// 60th-80th percentile
+  {
+    x: subsets_x[3],
+    y: subsets_y[3],
+    z: subsets_z[3],
+    type: 'scatter3d',
+    mode: 'markers',
+    
+    marker: {
+        color: subsets_values[3],
+        size: 5,
+        colorscale: 'Viridis',
+        opacity: 0.6,
+    },
+  },
+// 80th+ 
+  {
+    x: subsets_x[4],
+    y: subsets_y[4],
+    z: subsets_z[4],
+    type: 'scatter3d',
+    mode: 'markers',
+    
+    marker: {
+        color: subsets_values[4],
+        size: 5,
+        colorscale: 'Viridis',
+        opacity: 0.8,
+    },
+  }
+
+  
+  ]
+
+
+Plotly.newPlot('myDiv', data)
