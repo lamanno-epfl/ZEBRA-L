@@ -1,0 +1,27 @@
+{
+"sections":
+    [
+    {"name":"name of section1",
+    "subsections" : [
+        {"name":"name of subsection1",
+        "files":[
+            {"filename":"path to file1",
+            "lipid_name":" lipid name of file1"
+            },
+            {"filename":"path to file2",
+            "lipid_name":" lipid name of file2"
+        }
+        ]
+
+        },
+        {"name":"name of subsection2",
+        }
+    ]
+    },
+    {"name":"name of section2"
+
+
+    },
+
+    ]
+}
