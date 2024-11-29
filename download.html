@@ -1,46 +1,88 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Download Page</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download</title>
     <style>
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+        /* Overall layout */
+        body {
+            margin: 30px;
             font-family: Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
-        #plot {
+
+        /* Left panel */
+        .left-content {
+            flex: 1;
+            padding: 20px;
+            margin: 30px;
+            margin-right: 30px; /* Add margin to the right */
+            background-color: #f8f8f8;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Dropdown menus */
+        .dropdown {
+            margin-bottom: 15px;
+        }
+
+        select {
             width: 100%;
-            height: 600px;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        } margin-right: 30px; /* Add margin to the right */
+
+        /* List of items */
+        .item-list {
+            flex: 1;
+            overflow-y: auto;
         }
-        .input-group {
-            margin: 20px 0;
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Right panel */
+        .iframe-container {
+            flex: 2;
+            display: flex;
+            justify-content: center;
+            margin: 30px;
+            padding: 30px;
+            align-items: center;
+            background-color: #ffffff;
+        }
+
+        iframe {
+            width: 95%;
+            height: 95%;
+            border: none;
         }
     </style>
 
-    <div class="container">
-        <button class="nav-button" onclick="navigate('visualise')">Visualise</button>
-        <button class="nav-button" onclick="navigate('tutorials')">Tutorials</button>
-    </div>
-
-    <script>
-        function navigate(page) {
-            // In a real application, you would replace these with actual URLs
-            const pages = {
-                'visualise': 'visualise.html',
-                'tutorials': 'tutorials.html'
-            };
-            
-            window.location.href = pages[page];
-        }
-    </script>
 
 </head>
-
-
-
 <body>
-
+    
     <div class="container">
         <h1>Download Page</h1>
         Please find below links to both the raw and processed data sets.

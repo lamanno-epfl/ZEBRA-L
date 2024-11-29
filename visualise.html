@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>K3D Plot Viewer</title>
+    <title>Embryonic Zebrafish Lipid Viewer</title>
     <style>
         /* Overall layout */
         body {
-            margin: 0;
+            margin: 30PX;
             font-family: Arial, sans-serif;
             display: flex;
             height: 100vh;
@@ -74,26 +74,12 @@
             border: none;
         }
     </style>
-    <div class="container">
-        <button class="nav-button" onclick="navigate('download')">Download</button>
-        <button class="nav-button" onclick="navigate('tutorials')">Tutorials</button>
-    </div>
 
-    <script>
-        function navigate(page) {
-            // In a real application, you would replace these with actual URLs
-            const pages = {
-                'download': 'download.html',
-                'tutorials': 'tutorials.html'
-            };
-            
-            window.location.href = pages[page];
-        }
-    </script>
+
 </head>
 <body>
     <div class="left-content">
-        <h2>Search Plots</h2>
+        <h2>Lipid Viewer</h2>
         <div class="dropdown">
             <label for="classFilter">Class:</label>
             <select id="classFilter" onchange="filterItems()">
