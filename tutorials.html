@@ -1,45 +1,144 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Download Page</title>
     <style>
+        :root {
+            --pale-blue: #ffffff;
+            --light-blue: #6ea5e0;
+            --pale-gray: #eceff1;
+            --dark-gray: #2979ce;
+            --text-color: #37474f;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--pale-blue);
+            color: var(--text-color);
+        }
+
         .container {
-            max-width: 800px;
-            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            max-width: 2200px;
+            margin: 50px auto;
             padding: 20px;
-            font-family: Arial, sans-serif;
         }
-        #plot {
-            width: 100%;
-            height: 600px;
+
+        .column {
+            width: 30%;
+            background-color: var(--pale-gray);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        .input-group {
-            margin: 20px 0;
+
+        h1 {
+            text-align: center;
+            color: var(--dark-gray);
+            font-size: 2.5em;
+            margin-bottom: 20px;
         }
+
+        h2 {
+            color: var(--dark-gray);
+            font-size: 1.8em;
+            border-bottom: 2px solid var(--light-blue);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        a {
+            color: var(--dark-gray);
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: var(--pale-blue);
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        li {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: var(--pale-blue);
+            border-left: 4px solid var(--light-blue);
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        li:hover {
+            background-color: var(--light-blue);
+        }
+
     </style>
-
-
-
-
 </head>
-
-
-
 <body>
-
+    <h1>Tutorials</h1>
     <div class="container">
-        <h1>Tutorials</h1>
-        HELP!!!
-
-        <h2>Some vignette stuff for loading / analysing processed data?</h2>
-        notebooks
-
-        <h2>Running uMAIA</h2>
-        github stuff
         
+        <div class="column">
+            <h2>Running uMAIA</h2>
+            <ul>
+                <li> 
+                    <p>Installation instructions can be found at the uMAIA repository on GitHub at 
+                        <a href="https://github.com/lamanno-epfl/uMAIA/tree/main" target="_blank">github.com/lamanno-epfl/uMAIA/</a> 
+                    </p> 
+                </li>
+                <li> 
+                    <p>The technical walkthrough of the pipeline, including peak calling, matching and normalization, can be found 
+                        <a href="https://github.com/lamanno-epfl/uMAIA/blob/main/uMAIA_tutorial.ipynb" target="_blank">here</a> 
+                    </p> 
+                </li>
+                <li> 
+                    <p>A guide to configuring parameters for peak-calling for TOF datasets can be found 
+                        <a href="https://github.com/lamanno-epfl/uMAIA/blob/main/tutorialOtherMSI-umaia.ipynb" target="_blank">here</a> 
+                    </p> 
+                </li>
+            </ul>
+        </div>
 
+        <div class="column">
+            <h2>Walkthrough for processed datasets</h2>
+            <ul>
+                <li> 
+                    <a href="tutorial-4d.html" style="font-size: 20px;">Vignette for 4D lipidomics visualisation</a>
+                </li>
+
+                <li> 
+                    <p>Please find the corresponding runnable notebook on our <a href="https://github.com/lamanno-epfl/uMAIA/blob/main/uMAIA_tutorial.ipynb" target="_blank">GitHub</a> </p>
+                </li>
+            </ul>
+        </div>
+
+        <div class="column">
+            <h2>Inspecting HybISS data</h2>
+            <ul>
+                <li> 
+                    <a href="tutorial-hybiss.html" style="font-size: 20px;">Vignette for data querying</a>
+                </li>
+
+                <li> 
+                    <p>Please find the corresponding runnable notebook on our <a href="https://github.com/lamanno-epfl/uMAIA/blob/main/uMAIA_tutorial.ipynb" target="_blank">GitHub</a> </p>
+                </li>
+            </ul>
+        </div>
 
     </div>
-
 </body>
 </html>
