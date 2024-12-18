@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jupyter Notebook Style Page</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        .markdown-cell, .code-cell {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f8f8;
+            border-left: 5px solid #268bd2;
+            border-radius: 5px;
+        }
+
+        .markdown-cell {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .code-cell {
+            background-color: #eee;
+            border-left: 5px solid #859900;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .code-cell pre {
+            margin: 0;
+            overflow: auto;
+        }
+
+        .code-cell-output {
+            margin-top: 10px;
+            background-color: #e6e6e6;
+            border-left: 5px solid #d33682;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .image-cell {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .image-cell img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- Markdown Cell -->
+    <div class="markdown-cell">
+        <h1>4D lipidomic data</h1>
+        <p>In this vignette you will find how to load the data, and plot galleries of lipids</p>
+    </div>
+    
+    <!-- Markdown Cell -->
+    <div class="markdown-cell">
+        <p>Files are formatted as .h5ad for loading in R and Python</p>
+    </div>
+
+
+    <!-- Code Cell -->
+    <div class="code-cell">
+        <pre><code># Import modules and helper function for plotting
+import anndata as ad
+import numpy
+import matplotlib.pyplot as plt
+from scipy.interpolate import griddata
+
+def gridSection(adata, section=7):
+    # select a specific section
+    ix_section = adata.uns['x_coord'] ==section
+
+    unique_values = np.unique(adata.uns['annotation'][ix_section])
+
+    # Create 2D grid (x, y) for a single z-slice (if z=0)
+    x = adata.uns['z_coord'][ix_section]
+    y = adata.uns['y_coord'][ix_section]
+    values = adata.uns['annotation'][ix_section]
+    grid_x, grid_y = np.meshgrid(np.arange(x.min(), x.max() + 1), 
+                                    np.arange(y.min(), y.max() + 1))
+
+    # Interpolate the integer values on the 2D grid
+    grid_values = griddata((x, y), values, (grid_x, grid_y), method='nearest')
+    
+    return grid_x, grid_y, grid_values, unique_values
+
+        </code></pre>
+    </div>
+
+    <div class="markdown-cell">
+        <p>We load the data and select a specific section for plotting in 2D</p>
+    </div>
+
+    <div class="code-cell">
+        <pre><code># Create a gallery of lipid intensities
+# load data
+output_filepath = '/data/lipidatlas/REBUTTAL/WEBSITE/processed72_anatomical.h5ad'
+adata = ad.read_h5ad(output_filepath)
+
+# retrieve metadata for plotting
+grid_x, grid_y, grid_values, unique_values = gridSection(adata, 7)
+        </code></pre>
+    </div>
+
+    <!-- Image Cell
+    <div class="image-cell">
+        <img src="tutorial_images/hybiss_tutorial_lipids.png" alt="Lipid Gallery" />
+    </div> -->
+
+    <div class="markdown-cell">
+        <p>We now visualise the image and overlay it with anatomical labels</p>
+    </div>
+
+
+    <div class="code-cell">
+        <pre><code># scatter plot
+ix_mz = 35 # index of mz value to plot
+fig = plt.figure(None, (9,3))
+plt.title(adata.var.iloc[ix_mz].values[0])
+plt.scatter(adata.uns['z_coord'][ix_section], adata.uns['y_coord'][ix_section],
+            c=adata.X[ix_section,ix_lipid], s=1)
+
+contour = plt.contour(grid_x, grid_y, grid_values, levels=unique_values,
+                        colors=adata.uns['df_annotation'].loc[unique_values].color.values)
+plt.clabel(contour, inline=True, fontsize=8, fmt='%d')
+cbar = plt.colorbar(label='Value')
+cbar.set_ticks(unique_values)
+cbar.set_ticklabels(adata.uns['df_annotation'].loc[unique_values].anatomicalName)
+plt.gca().invert_yaxis()
+plt.axis('off')
+plt.show()
+            
+        </code></pre>
+    </div>
+
+
+    <!-- Image Cell -->
+    <div class="image-cell">
+        <img src="tutorial_images/hybiss_tutorial_rna.png" alt="Lipid Gallery" />
+    </div>
+
+    <div class="markdown-cell">
+        <p>Lastly, we can overlay a selection of genes ontop of lipid images</p>
+    </div>
+
+    <div class="code-cell">
+        <pre><code># Show on top the 3 spatially localised genes overlayed ontop of lipid intensities
+            # 
+genes_select = ['sox11a', 'apoc2', 'pax6a']
+colors = ['gold', 'blue', 'red']
+
+fig = plt.figure(None, (20,4))
+gs = plt.GridSpec(2,3)
+
+for i, ix_lipid in enumerate(np.arange(7, 90, 6).astype(int)[:6]):
+    plt.subplot(gs[i])
+    plt.scatter(adata_l.uns['x_coord'], adata_l.uns['y_coord'], 
+                c= adata_l.X[:,ix_lipid], s=1, cmap='Greys',
+                rasterized=True, 
+                vmax= np.percentile(adata_l.X[:,ix_lipid],98))
+    
+    # scatter on top genes of interest
+    for ig, g in enumerate(genes_select):
+        ix_gene = np.argwhere((adata_g.var.values.flatten() == g)).flatten()
+        ix_spot = np.argwhere(adata_g.X[:,ix_gene] > 0).flatten()
+        plt.scatter(adata_g.uns['x_coord'][ix_spot], 
+                    adata_g.uns['y_coord'][ix_spot], s=1, 
+                    color=colors[ig],
+                    edgecolor='none',
+                    alpha=0.7,
+                    rasterized=True)
+        
+    
+    plt.title(adata_l.var.iloc[ix_lipid].values[0])
+    plt.axis('off')
+    plt.gca().invert_yaxis()
+            
+        </code></pre>
+    </div>
+<!-- 
+    <!-- Image Cell -->
+    <div class="image-cell">
+        <img src="tutorial_images/hybiss_tutorial_overlay.png" alt="Lipid Gallery" />
+    </div>
+
+     -->
+    
+    
+
+
+
+</div>
+
+</body>
+</html>

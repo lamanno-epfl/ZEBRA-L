@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jupyter Notebook Style Page</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        .markdown-cell, .code-cell {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f8f8;
+            border-left: 5px solid #268bd2;
+            border-radius: 5px;
+        }
+
+        .markdown-cell {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .code-cell {
+            background-color: #eee;
+            border-left: 5px solid #859900;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .code-cell pre {
+            margin: 0;
+            overflow: auto;
+        }
+
+        .code-cell-output {
+            margin-top: 10px;
+            background-color: #e6e6e6;
+            border-left: 5px solid #d33682;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .image-cell {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .image-cell img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- Markdown Cell -->
+    <div class="markdown-cell">
+        <h1>HybISS and consecutive MSI acquisition</h1>
+        <p>In this vignette you will find how to load the data, and plot galleries of lipids and gene spots</p>
+    </div>
+    
+    <!-- Markdown Cell -->
+    <div class="markdown-cell">
+        <p>Files are formatted as .h5ad for loading in R and Python</p>
+    </div>
+
+
+    <!-- Code Cell -->
+    <div class="code-cell">
+        <pre><code># Load the data objects and import modules
+import anndata as ad
+import matplotlib.pyplot as plt
+import numpy as np
+lipids_filepath = '/data/lipidatlas/REBUTTAL/WEBSITE/consecutiveSection-lipids.h5ad'
+hybiss_filepath = '/data/lipidatlas/REBUTTAL/WEBSITE/consecutiveSection-RNA.h5ad'
+
+adata_l = ad.read_h5ad(lipids_filepath)
+adata_g = ad.read_h5ad(hybiss_filepath)
+        </code></pre>
+    </div>
+
+    <div class="markdown-cell">
+        <p>We can visualise a gallery of a random set of lipids and print their corresponding lipid name</p>
+    </div>
+
+    <div class="code-cell">
+        <pre><code># Create a gallery of lipid intensities
+fig = plt.figure(None, (20,4))
+gs = plt.GridSpec(3,6)
+
+for i, ix_lipid in enumerate(np.arange(7, 90, 3).astype(int)[:18]):
+    plt.subplot(gs[i])
+    plt.scatter(adata_l.uns['x_coord'], adata_l.uns['y_coord'], 
+                c= adata_l.X[:,ix_lipid], s=1, cmap='Blues',
+                rasterized=True, 
+                vmax= np.percentile(adata_l.X[:,ix_lipid],98))
+
+    plt.title(adata_l.var.iloc[ix_lipid].values[0])
+    plt.axis('off')
+    plt.gca().invert_yaxis()
+        </code></pre>
+    </div>
+
+    <!-- Image Cell -->
+    <div class="image-cell">
+        <img src="tutorial_images/hybiss_tutorial_lipids.png" alt="Lipid Gallery" />
+    </div>
+
+    <div class="markdown-cell">
+        <p>We can do the same for the RNA spots. These are very sparse images, so we only plot dots for which a detection exists</p>
+    </div>
+
+
+    <div class="code-cell">
+        <pre><code># Create a gallery of gene spots
+fig = plt.figure(None, (20,4))
+gs = plt.GridSpec(3,6)
+
+for i, ix_gene in enumerate(np.arange(0, 80, 3).astype(int)[:18]):
+    plt.subplot(gs[i])
+    
+    ix_spot = np.argwhere(adata_g.X[:,ix_gene] > 0).flatten()
+    plt.scatter(adata_g.uns['x_coord'][ix_spot], adata_g.uns['y_coord'][ix_spot], s=1, color='red',
+                rasterized=True)
+
+    plt.title(adata_g.var.iloc[ix_gene].values[0])
+    plt.axis('off')
+    plt.gca().invert_yaxis()
+            
+        </code></pre>
+    </div>
+
+
+    <!-- Image Cell -->
+    <div class="image-cell">
+        <img src="tutorial_images/hybiss_tutorial_rna.png" alt="Lipid Gallery" />
+    </div>
+
+    <div class="markdown-cell">
+        <p>Lastly, we can overlay a selection of genes ontop of lipid images</p>
+    </div>
+
+    <div class="code-cell">
+        <pre><code># Show on top the 3 spatially localised genes overlayed ontop of lipid intensities
+            # 
+genes_select = ['sox11a', 'apoc2', 'pax6a']
+colors = ['gold', 'blue', 'red']
+
+fig = plt.figure(None, (20,4))
+gs = plt.GridSpec(2,3)
+
+for i, ix_lipid in enumerate(np.arange(7, 90, 6).astype(int)[:6]):
+    plt.subplot(gs[i])
+    plt.scatter(adata_l.uns['x_coord'], adata_l.uns['y_coord'], 
+                c= adata_l.X[:,ix_lipid], s=1, cmap='Greys',
+                rasterized=True, 
+                vmax= np.percentile(adata_l.X[:,ix_lipid],98))
+    
+    # scatter on top genes of interest
+    for ig, g in enumerate(genes_select):
+        ix_gene = np.argwhere((adata_g.var.values.flatten() == g)).flatten()
+        ix_spot = np.argwhere(adata_g.X[:,ix_gene] > 0).flatten()
+        plt.scatter(adata_g.uns['x_coord'][ix_spot], 
+                    adata_g.uns['y_coord'][ix_spot], s=1, 
+                    color=colors[ig],
+                    edgecolor='none',
+                    alpha=0.7,
+                    rasterized=True)
+        
+    
+    plt.title(adata_l.var.iloc[ix_lipid].values[0])
+    plt.axis('off')
+    plt.gca().invert_yaxis()
+            
+        </code></pre>
+    </div>
+
+    <!-- Image Cell -->
+    <div class="image-cell">
+        <img src="tutorial_images/hybiss_tutorial_overlay.png" alt="Lipid Gallery" />
+    </div>
+
+    
+    
+    
+
+
+
+</div>
+
+</body>
+</html>
