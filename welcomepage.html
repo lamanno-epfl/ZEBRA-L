@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome Page</title>
+    <style>
+        /* Overall body styling */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden; /* Prevents unnecessary scrolling */
+        }
+
+        /* Title styling */
+        .welcome-text {
+            text-align: center;
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+
+        .welcome-text h1 {
+            font-size: 24px; /* Smaller font for smaller windows */
+            font-weight: bold;
+            color: #2869cb;
+            margin: 5px 0;
+        }
+
+        .welcome-text p {
+            font-size: 12px; /* Smaller font for smaller screens */
+            color: #1c1c1c;
+            line-height: 1.2; /* Better readability on smaller screens */
+        }
+
+        .welcome-text a {
+            color: #2869cb;
+            text-decoration: none;
+        }
+
+        .welcome-text a:hover {
+            text-decoration: underline;
+        }
+
+        /* GIF styling */
+        .gif-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 5px;
+            width: 80%;
+        }
+
+        .gif-container img {
+            max-width: 60%; /* Ensures the image fits smaller screens */
+            height: auto; /* Maintains aspect ratio */
+            max-height: 60vh; /* Sets a responsive max height for the GIF relative to viewport height */
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Ensure responsiveness for very small screens */
+        @media (max-width: 200px) {
+            .welcome-text h1 {
+                font-size: 20px; /* Smaller header for mobile devices */
+            }
+
+            .welcome-text p {
+                font-size: 10px; /* Smaller text for mobile devices */
+            }
+
+            .gif-container img {
+                max-width: 30%;
+                max-height: 40vh; /* Scales with viewport height */
+            }
+        }
+
+        @media (max-width: 400px) {
+            .welcome-text h1 {
+                font-size: 18px; 
+            }
+
+            .welcome-text p {
+                font-size: 9px; 
+            }
+
+            .gif-container img {
+                max-width: 60%;
+                max-height: 30vh; /* Adjusts height relative to viewport height */
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Welcome Text -->
+    <div class="welcome-text">
+        <h1>Welcome to the Embryonic Zebrafish Lipid Explorer!</h1>
+        <p>This website was created for the Preprint 'Unified Mass Imaging Maps the Lipidome of Vertebrate Development' <br> 
+        from Schede and Alieh et al. It is available <a href="https://doi.org/10.1101/2024.08.20.608739" target="_blank">here</a> <br>
+        Use the buttons below to navigate to our Download, Visualisation and Tutorial pages.
+    </p>
+    </div>
+
+    <!-- GIF Section -->
+    <div class="gif-container">
+        <img src="twittergif.gif" alt="Welcome GIF">
+    </div>
+
+    <div class="welcome-text">
+        <p>If you use this explorer please remember to cite us <3</p>
+    </div>
+</body>
+</html>
