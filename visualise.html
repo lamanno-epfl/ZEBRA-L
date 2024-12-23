@@ -89,10 +89,26 @@
             height: 95%;
             border: none;
         }
+        #overlay-image {
+            position: absolute; /* Positions the image relative to the iframe-container */
+            top: 10vh; /* Adjust as needed to position the image at the top */
+            left: 55%; /* Centers the image horizontally */
+            transform: translateX(-10%); /* Centers the image exactly by offsetting half its width */
+            opacity: 0.95; /* Sets the transparency level */
+            z-index: 1; /* Ensures the image is above other elements in the container */
+            max-width: 50vh; /* Adjust size of the image */
+            pointer-events: none; /* Ensures the image doesn’t block clicks on other elements */
+        }
+
+        #default-image {
+            position: relative; /* Ensure it's in the same stacking context */
+            z-index: 2; /* Higher z-index to stay in front of the overlay */
+        }
+
 
         /* Default image shown before any button is clicked */
         .default-image {
-            width: 80%; /* Image is now 50% of the container's width */
+            width: 100%; /* Image is now 50% of the container's width */
             height: auto; /* Maintain aspect ratio */
             max-height: 90vh; /* Ensure it doesn't take up more than 50% of the height */
             max-width: 100vh;
@@ -163,6 +179,7 @@
     </div>
 
     <div class="iframe-container">
+        <img id="overlay-image" src="anatomy.png" alt="Overlay Image">
         <div id="button-name-display" class="button-name-display"></div>
         <!-- Default image to be displayed before button click -->
         <img id="default-image" class="default-image" src="welcome-lipidviewer.png" alt="Default Image" />
